@@ -1,0 +1,5 @@
+value,label_zh,label_en,sort_order
+x_axis_linear,X轴线性马达,X-axis linear motor,1
+rotor,转子马达,Rotary motor,2
+taptic_like_linear,Taptic类线性马达,Taptic-like linear motor,3
+z_axis_linear,Z轴线性马达,Z-axis linear motor,4

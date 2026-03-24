@@ -1,0 +1,15 @@
+phone_id,protocol,power_w
+1,USB PD,27
+2,USB PD,20
+3,USB PD,27
+3,USB PD PPS,45
+3,HyperCharge,90
+4,USB PD,45
+4,USB PD PPS,45
+4,HyperCharge,90
+5,USB PD,27
+5,USB PD PPS,45
+6,USB PD,27
+6,USB PD PPS,30
+7,USB PD,45
+7,SUPERVOOC,100

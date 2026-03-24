@@ -1,0 +1,5 @@
+value,label,sort_order
+USB_PD,USB PD,1
+USB_PD_PPS,USB PD PPS,2
+HyperCharge,HyperCharge,3
+SUPERVOOC,SUPERVOOC,4

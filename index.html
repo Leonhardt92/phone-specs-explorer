@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>手机参数 Demo：高级筛选</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/treeselectjs@0.14.2/dist/treeselectjs.css" />
+  <link rel="stylesheet" href="assets/css/index.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">手机参数 Demo：高级筛选</h1>
+        <div class="sub" id="pageSub">搜索区改成左侧基础筛选区 + 右侧高级筛选入口栏。支持摄像头、屏幕、无线、其他硬件高级筛选，并加入最大充电功率筛选与充电协议树形筛选。</div>
+      </div>
+      <div class="lang-switch">
+        <label for="langSelect" id="languageLabel">语言</label>
+        <select id="langSelect"></select>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="filter-shell" id="filterShell">
+        <div class="filter-view filter-main">
+          <div class="main-layout">
+            <div class="main-left">
+              <div class="base-grid">
+                <div class="field">
+                  <label id="brandLabel" for="brandSelect">品牌</label>
+                  <select id="brandSelect" multiple></select>
+                </div>
+                <div class="field">
+                  <label id="batteryLabel" for="batteryRangeSelect">电池容量</label>
+                  <select id="batteryRangeSelect" multiple></select>
+                </div>
+                <div class="field">
+                  <label id="ramLabel" for="ramSelect">内存</label>
+                  <select id="ramSelect" multiple></select>
+                </div>
+                <div class="field">
+                  <label id="storageLabel" for="storageSelect">硬盘</label>
+                  <select id="storageSelect" multiple></select>
+                </div>
+              </div>
+
+              <div id="dimensionsTitle" class="section-subtitle">机身与充电</div>
+
+              <div class="dimension-grid">
+                <div class="field">
+                  <label id="lengthLabel" for="lengthRangeSelect">长度</label>
+                  <select id="lengthRangeSelect" multiple></select>
+                </div>
+                <div class="field">
+                  <label id="widthLabel" for="widthRangeSelect">宽度</label>
+                  <select id="widthRangeSelect" multiple></select>
+                </div>
+                <div class="field">
+                  <label id="thicknessLabel" for="thicknessRangeSelect">厚度</label>
+                  <select id="thicknessRangeSelect" multiple></select>
+                </div>
+                <div class="field">
+                  <label id="chargingPowerLabel" for="chargingPowerSelect">充电功率</label>
+                  <select id="chargingPowerSelect" multiple></select>
+                </div>
+                <div class="field">
+                  <label id="chargingProtocolLabel">充电协议树形筛选</label>
+                  <div id="chargingProtocolTreeContainer"></div>
+                </div>
+              </div>
+
+              <div class="main-foot-note" id="mainFootNote">修改任意筛选项会立即自动查询，不需要搜索和重置按钮。</div>
+            </div>
+
+            <div class="main-right">
+              <div class="entry-rail">
+                <div class="entry-wrap">
+                  <label id="cameraEntryLabel">摄像头筛选</label>
+                  <div class="entry-card" id="cameraEntryCard">
+                    <div class="entry-title" id="cameraEntryTitle">打开筛选</div>
+                    <div class="entry-meta" id="cameraEntryMeta">未启用</div>
+                  </div>
+                </div>
+
+                <div class="entry-wrap">
+                  <label id="wirelessEntryLabel">无线筛选</label>
+                  <div class="entry-card" id="wirelessEntryCard">
+                    <div class="entry-title" id="wirelessEntryTitle">打开筛选</div>
+                    <div class="entry-meta" id="wirelessEntryMeta">未启用</div>
+                  </div>
+                </div>
+
+                <div class="entry-wrap">
+                  <label id="screenEntryLabel">屏幕筛选</label>
+                  <div class="entry-card" id="screenEntryCard">
+                    <div class="entry-title" id="screenEntryTitle">打开筛选</div>
+                    <div class="entry-meta" id="screenEntryMeta">未启用</div>
+                  </div>
+                </div>
+
+                <div class="entry-wrap">
+                  <label id="hardwareEntryLabel">其他硬件筛选</label>
+                  <div class="entry-card" id="hardwareEntryCard">
+                    <div class="entry-title" id="hardwareEntryTitle">打开筛选</div>
+                    <div class="entry-meta" id="hardwareEntryMeta">未启用</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-view filter-panel">
+          <div class="panel-head">
+            <div>
+              <h3 id="panelTitle">摄像头筛选</h3>
+              <p id="panelDesc">按前摄、主摄、超广角、潜望长焦分别筛选。</p>
+            </div>
+            <button class="panel-close" type="button" id="panelClose">×</button>
+          </div>
+
+          <div class="panel-scroll">
+            <div class="panel-summary" id="panelSummary"></div>
+
+            <div id="panelSection-camera">
+              <div class="role-grid">
+                <div class="panel-card">
+                  <h4 id="frontTitle">前摄</h4>
+                  <p id="frontDesc">自拍镜头参数筛选。</p>
+                  <div class="field"><label id="frontMpLabel" for="frontMpRangeSelect">像素</label><select id="frontMpRangeSelect" multiple></select></div>
+                  <div class="field"><label id="frontCmosLabel" for="frontCmosRangeSelect">CMOS尺寸</label><select id="frontCmosRangeSelect" multiple></select></div>
+                  <div class="field"><label id="frontApertureLabel" for="frontApertureRangeSelect">光圈</label><select id="frontApertureRangeSelect" multiple></select></div>
+                  <div class="field compact-bool-field">
+                    <label id="frontOisLabel" for="frontOisCheck">光学防抖</label>
+                    <label class="check-label">
+                      <input type="checkbox" id="frontOisCheck" />
+                      <span id="frontOisCheckText">支持</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="panel-card">
+                  <h4 id="mainTitle">主摄</h4>
+                  <p id="mainDesc">主摄参数筛选。</p>
+                  <div class="field"><label id="mainMpLabel" for="mainMpRangeSelect">像素</label><select id="mainMpRangeSelect" multiple></select></div>
+                  <div class="field"><label id="mainCmosLabel" for="mainCmosRangeSelect">CMOS尺寸</label><select id="mainCmosRangeSelect" multiple></select></div>
+                  <div class="field"><label id="mainApertureLabel" for="mainApertureRangeSelect">光圈</label><select id="mainApertureRangeSelect" multiple></select></div>
+                  <div class="field compact-bool-field">
+                    <label id="mainOisLabel" for="mainOisCheck">光学防抖</label>
+                    <label class="check-label">
+                      <input type="checkbox" id="mainOisCheck" />
+                      <span id="mainOisCheckText">支持</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="panel-card">
+                  <h4 id="ultrawideTitle">超广角</h4>
+                  <p id="ultrawideDesc">超广角镜头参数筛选。</p>
+                  <div class="field"><label id="ultrawideMpLabel" for="ultrawideMpRangeSelect">像素</label><select id="ultrawideMpRangeSelect" multiple></select></div>
+                  <div class="field"><label id="ultrawideCmosLabel" for="ultrawideCmosRangeSelect">CMOS尺寸</label><select id="ultrawideCmosRangeSelect" multiple></select></div>
+                  <div class="field"><label id="ultrawideApertureLabel" for="ultrawideApertureRangeSelect">光圈</label><select id="ultrawideApertureRangeSelect" multiple></select></div>
+                  <div class="field compact-bool-field">
+                    <label id="ultrawideOisLabel" for="ultrawideOisCheck">光学防抖</label>
+                    <label class="check-label">
+                      <input type="checkbox" id="ultrawideOisCheck" />
+                      <span id="ultrawideOisCheckText">支持</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="panel-card">
+                  <h4 id="periscopeTitle">潜望长焦</h4>
+                  <p id="periscopeDesc">潜望长焦镜头参数筛选。</p>
+                  <div class="field"><label id="periscopeMpLabel" for="periscopeMpRangeSelect">像素</label><select id="periscopeMpRangeSelect" multiple></select></div>
+                  <div class="field"><label id="periscopeCmosLabel" for="periscopeCmosRangeSelect">CMOS尺寸</label><select id="periscopeCmosRangeSelect" multiple></select></div>
+                  <div class="field"><label id="periscopeApertureLabel" for="periscopeApertureRangeSelect">光圈</label><select id="periscopeApertureRangeSelect" multiple></select></div>
+                  <div class="field compact-bool-field">
+                    <label id="periscopeOisLabel" for="periscopeOisCheck">光学防抖</label>
+                    <label class="check-label">
+                      <input type="checkbox" id="periscopeOisCheck" />
+                      <span id="periscopeOisCheckText">支持</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="panelSection-screen" style="display:none;">
+              <div class="panel-grid-4">
+                <div class="panel-card">
+                  <h4 id="screenSizeTitle">屏幕尺寸</h4>
+                  <div class="field"><label id="screenSizeLabel" for="screenSizeSelect">屏幕尺寸</label><select id="screenSizeSelect" multiple></select></div>
+                </div>
+                <div class="panel-card">
+                  <h4 id="screenResolutionTitle">分辨率</h4>
+                  <div class="field"><label id="screenResolutionLabel" for="screenResolutionSelect">分辨率</label><select id="screenResolutionSelect" multiple></select></div>
+                </div>
+                <div class="panel-card">
+                  <h4 id="screenRefreshTitle">最高刷新率</h4>
+                  <div class="field"><label id="screenRefreshLabel" for="screenRefreshSelect">最高刷新率</label><select id="screenRefreshSelect" multiple></select></div>
+                </div>
+                <div class="panel-card">
+                  <h4 id="screenBrightnessTitle">最高亮度</h4>
+                  <div class="field"><label id="screenBrightnessLabel" for="screenBrightnessSelect">最高亮度</label><select id="screenBrightnessSelect" multiple></select></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="panelSection-wireless" style="display:none;">
+              <div class="panel-grid-4">
+                <div class="panel-card span-3">
+                  <h4 id="wirelessBandsTitle">频段</h4>
+                  <div id="wirelessBandTreeContainer"></div>
+                </div>
+                <div class="panel-card">
+                  <h4 id="wirelessWifiTitle">Wi‑Fi</h4>
+                  <div class="field"><label id="wifiLabel" for="wifiSelect">Wi‑Fi</label><select id="wifiSelect" multiple></select></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="panelSection-hardware" style="display:none;">
+              <div class="panel-grid-5">
+                <div class="panel-card">
+                  <h4 id="hwJackTitle">3.5mm 耳机孔</h4>
+                  <div class="field compact-bool-field">
+                    <label class="check-label">
+                      <input type="checkbox" id="jack35Check" />
+                      <span id="jack35CheckText">支持</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="panel-card">
+                  <h4 id="hwUsbTitle">USB 规格</h4>
+                  <div class="field"><label id="usbLabel" for="usbSelect">USB 规格</label><select id="usbSelect" multiple></select></div>
+                </div>
+                <div class="panel-card">
+                  <h4 id="hwNfcTitle">NFC</h4>
+                  <div class="field compact-bool-field">
+                    <label class="check-label">
+                      <input type="checkbox" id="nfcCheck" />
+                      <span id="nfcCheckText">支持</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="panel-card">
+                  <h4 id="hwIrTitle">红外</h4>
+                  <div class="field compact-bool-field">
+                    <label class="check-label">
+                      <input type="checkbox" id="irCheck" />
+                      <span id="irCheckText">支持</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="panel-card">
+                  <h4 id="hwMotorTitle">震动马达</h4>
+                  <div class="field"><label id="motorLabel" for="motorSelect">震动马达类型</label><select id="motorSelect" multiple></select></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="meta">
+        <div id="status">正在加载多个 CSV...</div>
+        <div class="hint" id="rowHint">点击任意一行展开；点击型号进入详情</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th id="thId">ID</th>
+            <th id="thBrand">品牌</th>
+            <th id="thModel">型号</th>
+            <th id="thSoc">SoC</th>
+            <th id="thBattery">电池</th>
+            <th id="thRam">内存</th>
+            <th id="thStorage">硬盘</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel note">
+      <div><strong id="noteTitle">这版改动：</strong></div>
+      <ul>
+        <li id="note1">搜索结果列表去掉了后置摄像头列。</li>
+        <li id="note2">新增最大充电功率与充电协议树形筛选。</li>
+        <li id="note3">点击行展开后仍可查看摄像头、频段与充电详情。</li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/treeselectjs@0.14.2/dist/treeselectjs.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/dist/umd/i18next.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/i18next-http-backend@2.6.1/i18nextHttpBackend.min.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/index.js"></script>
+</body>
+</html>

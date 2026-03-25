@@ -13,7 +13,7 @@
     <div class="topbar">
       <div>
         <h1 id="pageTitle">手机参数 Demo：高级筛选</h1>
-        <div class="sub" id="pageSub">搜索区改成左侧基础筛选区 + 右侧高级筛选入口栏。支持摄像头、屏幕、无线、其他硬件高级筛选，并加入最大充电功率筛选与充电协议树形筛选。</div>
+        <div class="sub" id="pageSub">搜索区改成左侧基础筛选区 + 右侧高级筛选入口栏。支持摄像头、屏幕、无线、其他硬件高级筛选，并加入 SoC 树形筛选、最大充电功率筛选与充电协议树形筛选。</div>
       </div>
       <div class="lang-switch">
         <label for="langSelect" id="languageLabel">语言</label>
@@ -59,6 +59,10 @@
                 <div class="field">
                   <label id="thicknessLabel" for="thicknessRangeSelect">厚度</label>
                   <select id="thicknessRangeSelect" multiple></select>
+                </div>
+                <div class="field">
+                  <label id="socLabel">SoC</label>
+                  <div id="socTreeContainer"></div>
                 </div>
                 <div class="field">
                   <label id="chargingPowerLabel" for="chargingPowerSelect">充电功率</label>
@@ -255,6 +259,15 @@
                   </div>
                 </div>
                 <div class="panel-card">
+                  <h4 id="hwTfCardTitle">TF 卡</h4>
+                  <div class="field compact-bool-field">
+                    <label class="check-label">
+                      <input type="checkbox" id="tfCardCheck" />
+                      <span id="tfCardCheckText">支持</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="panel-card">
                   <h4 id="hwMotorTitle">震动马达</h4>
                   <div class="field"><label id="motorLabel" for="motorSelect">震动马达类型</label><select id="motorSelect" multiple></select></div>
                 </div>
@@ -291,7 +304,7 @@
       <div><strong id="noteTitle">这版改动：</strong></div>
       <ul>
         <li id="note1">搜索结果列表去掉了后置摄像头列。</li>
-        <li id="note2">新增最大充电功率与充电协议树形筛选。</li>
+        <li id="note2">新增 SoC 树形筛选、最大充电功率与充电协议树形筛选。</li>
         <li id="note3">点击行展开后仍可查看摄像头、频段与充电详情。</li>
       </ul>
     </div>

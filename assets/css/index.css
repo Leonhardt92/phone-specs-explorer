@@ -348,3 +348,50 @@ th { background: #f6f8fa; font-weight: 700; white-space: nowrap; }
   pointer-events: auto;
   opacity: 1;
 }
+
+
+/* v3: fix dropdown overlap near right rail / neighboring columns */
+.main-layout,
+.main-left,
+.main-right,
+.base-grid,
+.dimension-grid,
+.role-grid,
+.panel-grid-4,
+.panel-grid-5 {
+  overflow: visible;
+}
+
+.main-left,
+.main-right {
+  position: relative;
+}
+
+.main-left {
+  z-index: 2;
+}
+
+.main-right {
+  z-index: 1;
+}
+
+.field,
+.ts-wrapper,
+.treeselect {
+  position: relative;
+}
+
+.field:focus-within,
+.field.open,
+.ts-wrapper.focus,
+.ts-wrapper.dropdown-active,
+.treeselect--open,
+.treeselect:focus-within {
+  z-index: 120;
+}
+
+.ts-dropdown,
+.treeselect-list,
+.treeselect-input__dropdown {
+  z-index: 130 !important;
+}

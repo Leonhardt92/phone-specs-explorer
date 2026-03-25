@@ -14,7 +14,7 @@
   }
 
   async function loadEnabledLanguages() {
-    const rows = await fetchCsvRows('data/filters/languages.csv');
+    const rows = await fetchCsvRows('data/filters/base/languages.csv');
     return rows
       .filter(r => String(r.enabled).toLowerCase() === 'true')
       .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
@@ -23,8 +23,11 @@
   function getPreferredLanguage(availableCodes) {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && availableCodes.includes(saved)) return saved;
-    const browserLang = (navigator.language || 'zh').toLowerCase().startsWith('en') ? 'en' : 'zh';
-    return availableCodes.includes(browserLang) ? browserLang : (availableCodes[0] || 'zh');
+    const raw = String(navigator.language || 'zh').toLowerCase();
+    if (availableCodes.includes(raw)) return raw;
+    const primary = raw.split('-')[0];
+    if (availableCodes.includes(primary)) return primary;
+    return availableCodes.includes('zh') ? 'zh' : (availableCodes[0] || 'zh');
   }
 
   async function initI18n(requestedLang) {

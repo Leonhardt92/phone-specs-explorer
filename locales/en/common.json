@@ -136,5 +136,7 @@
     "4GTDD": "4G LTE TDD",
     "3G": "3G UMTS",
     "2G": "2G GSM"
-  }
+  },
+  "tfCard": "TF card",
+  "selectSoc": "Select SoC"
 }

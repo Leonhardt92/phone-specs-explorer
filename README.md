@@ -261,3 +261,10 @@
 - 这次不再只依赖 CSS 类切换，而是在 `openPanel()` / `closePanel()` 中直接控制显示隐藏：
   - 打开高级筛选：`.filter-main` → `display:none`
   - 关闭高级筛选：`.filter-main` → `display:block`
+
+
+## 多语言扩展
+
+- 马达与 SoC 采用 `label_<lang>` 动态字段，例如 `label_zh`、`label_en`、`label_ja`。
+- 新增语言时，除了补充 `locales/<lang>/common.json` 与 `data/filters/base/languages.csv` 外，数据类 CSV 只需增加对应 `label_<lang>` 列。
+- SoC 树配置位于 `data/filters/chipset/soc_groups.csv` 与 `data/filters/chipset/soc_variants.csv`。

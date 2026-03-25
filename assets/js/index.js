@@ -6,7 +6,7 @@ const CAMERA_ROLES = [
   { key: 'periscope', titleKey: 'periscopeTitle', descKey: 'periscopeDesc' }
 ];
 const ADVANCED_PANELS = ['camera', 'screen', 'wireless', 'hardware'];
-const BOOLEAN_CHECKBOX_NAMES = ['frontOis', 'mainOis', 'ultrawideOis', 'periscopeOis', 'jack35', 'nfc', 'ir'];
+const BOOLEAN_CHECKBOX_NAMES = ['frontOis', 'mainOis', 'ultrawideOis', 'periscopeOis', 'jack35', 'nfc', 'ir', 'tfCard'];
 
 const state = {
   lang: 'zh',
@@ -18,6 +18,8 @@ const state = {
   bandTree: null,
   selectedChargingProtocolTreeValues: [],
   chargingProtocolTree: null,
+  selectedSocTreeValues: [],
+  socTree: null,
   activePanel: 'camera'
 };
 
@@ -29,15 +31,25 @@ function setTextIfExists(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
 }
+function getLocalizedRowLabel(row, lang = state.lang, fallbackValue = '') {
+  if (!row) return String(fallbackValue || '');
+  const direct = row[`label_${lang}`];
+  if (direct) return direct;
+  return row.label_en || row.label_zh || row.label_native || row.label || row.name || row.value || String(fallbackValue || '');
+}
 function getMotorOptionLabel(row) {
-  return state.lang === 'en'
-    ? (row.label_en || row.label_zh || row.value)
-    : (row.label_zh || row.label_en || row.value);
+  return getLocalizedRowLabel(row, state.lang, row?.value);
 }
 function getMotorLabelByValue(value) {
   const row = (state.optionData.motorRows || []).find(item => String(item.value) === String(value));
-  if (!row) return String(value || '');
-  return getMotorOptionLabel(row);
+  return row ? getLocalizedRowLabel(row, state.lang, value) : String(value || '');
+}
+function getSocLabelByValue(value) {
+  const row = (state.optionData.socVariantRows || []).find(item => String(item.value) === String(value));
+  return row ? getLocalizedRowLabel(row, state.lang, value) : String(value || '');
+}
+function getLanguageLabel(langRow) {
+  return getLocalizedRowLabel(langRow, state.lang, langRow?.code);
 }
 function parseCsvFile(path) {
   return new Promise((resolve, reject) => {
@@ -240,6 +252,48 @@ function initOrRefreshChargingProtocolTree(allProtocolRows) {
     updatePanelSummary();
   });
 }
+
+function buildSocTreeOptions() {
+  const groups = (state.optionData.socGroupRows || []).slice().sort((a, b) => (a.sort || 0) - (b.sort || 0));
+  const variants = state.optionData.socVariantRows || [];
+  return groups.map(group => ({
+    name: getLocalizedRowLabel(group),
+    value: `GROUP|${group.value}`,
+    children: variants.filter(item => String(item.group_value) === String(group.value))
+      .sort((a, b) => (a.sort || 0) - (b.sort || 0))
+      .map(item => ({ name: getLocalizedRowLabel(item), value: item.value, children: [] }))
+  })).filter(node => node.children.length > 0);
+}
+function initOrRefreshSocTree() {
+  const container = document.getElementById('socTreeContainer');
+  if (!container) return;
+  const previousValue = state.selectedSocTreeValues || [];
+  container.innerHTML = '';
+  state.socTree = new Treeselect({
+    parentHtmlContainer: container,
+    value: previousValue,
+    options: buildSocTreeOptions(),
+    openLevel: 1,
+    showCount: true,
+    expandSelected: true
+  });
+  state.socTree.srcElement.addEventListener('input', (e) => {
+    state.selectedSocTreeValues = Array.isArray(e.detail) ? e.detail : [];
+    applyFilters();
+  });
+}
+function socTreeMatch(socValue, selectedTreeValues) {
+  if (!selectedTreeValues.length) return true;
+  return selectedTreeValues.some(v => {
+    const value = String(v);
+    if (value.startsWith('GROUP|')) {
+      const groupValue = value.slice(6);
+      return (state.optionData.socVariantRows || []).some(item => String(item.group_value) === groupValue && String(item.value) === String(socValue));
+    }
+    return String(socValue) === value;
+  });
+}
+
 function rangeMatch(value, selectedValues, ranges) {
   if (!selectedValues.length) return true;
   if (value == null || Number.isNaN(value)) return false;
@@ -317,15 +371,17 @@ function hardwareMatch(item) {
   const requireJack = getCheckboxValue('jack35');
   const requireNfc = getCheckboxValue('nfc');
   const requireIr = getCheckboxValue('ir');
+  const requireTfCard = getCheckboxValue('tfCard');
   const usbValues = getSelectValues('usb');
   const motorValues = getSelectValues('motor');
-  const anyFilter = requireJack || requireNfc || requireIr || usbValues.length || motorValues.length;
+  const anyFilter = requireJack || requireNfc || requireIr || requireTfCard || usbValues.length || motorValues.length;
   if (!anyFilter) return true;
   if (!spec) return false;
   return (
     (!requireJack || spec.has_3_5mm === true) &&
     (!requireNfc || spec.has_nfc === true) &&
     (!requireIr || spec.has_ir === true) &&
+    (!requireTfCard || spec.has_tf_card === true) &&
     discreteMatch(spec.usb_spec, usbValues) &&
     discreteMatch(spec.motor_type, motorValues)
   );
@@ -345,6 +401,7 @@ function chargingMatch(item) {
 function applyFilters() {
   const filtered = state.phones.filter(item => (
     discreteMatch(item.brand, getSelectValues('brand')) &&
+    socTreeMatch(item.soc, state.selectedSocTreeValues || []) &&
     rangeMatch(item.battery_mah, getSelectValues('battery'), state.optionData.batteryRanges) &&
     listMatch(item.ramOptions, getSelectValues('ram')) &&
     listMatch(item.storageOptions, getSelectValues('storage')) &&
@@ -366,7 +423,7 @@ function getCategorySummaryCount(category) {
   }
   if (category === 'screen') return ['screenSize','screenResolution','screenRefresh','screenBrightness'].reduce((acc, name) => acc + getSelectValues(name).length, 0);
   if (category === 'wireless') return (state.selectedBandTreeValues || []).length + getSelectValues('wifi').length;
-  if (category === 'hardware') return (getCheckboxValue('jack35') ? 1 : 0) + (getCheckboxValue('nfc') ? 1 : 0) + (getCheckboxValue('ir') ? 1 : 0) + getSelectValues('usb').length + getSelectValues('motor').length;
+  if (category === 'hardware') return (getCheckboxValue('jack35') ? 1 : 0) + (getCheckboxValue('nfc') ? 1 : 0) + (getCheckboxValue('ir') ? 1 : 0) + (getCheckboxValue('tfCard') ? 1 : 0) + getSelectValues('usb').length + getSelectValues('motor').length;
   return 0;
 }
 function updateAdvancedEntrySummary() {
@@ -405,6 +462,7 @@ function updatePanelSummary() {
     if (getCheckboxValue('jack35')) badges.push(tr('summaryCount', { label: tr('jack35'), count: 1 }));
     if (getCheckboxValue('nfc')) badges.push(tr('summaryCount', { label: tr('nfc'), count: 1 }));
     if (getCheckboxValue('ir')) badges.push(tr('summaryCount', { label: tr('ir'), count: 1 }));
+    if (getCheckboxValue('tfCard')) badges.push(tr('summaryCount', { label: tr('tfCard'), count: 1 }));
     const usbCount = getSelectValues('usb').length;
     if (usbCount) badges.push(tr('summaryCount', { label: tr('usb'), count: usbCount }));
     const motorCount = getSelectValues('motor').length;
@@ -442,19 +500,20 @@ function closePanel() {
 function setLangSelectOptions() {
   const select = document.getElementById('langSelect');
   select.innerHTML = state.languages.map(lang => {
-    const label = state.lang === 'zh' ? (lang.label_zh || lang.label_native || lang.code) : (lang.label_en || lang.label_native || lang.code);
+    const label = getLanguageLabel(lang);
     return `<option value="${escapeHtml(lang.code)}">${escapeHtml(label)}</option>`;
   }).join('');
   select.value = state.lang;
 }
 function applyLanguageToStaticText() {
   document.title = tr('appTitle');
-  document.documentElement.lang = state.lang === 'zh' ? 'zh-CN' : 'en';
+  document.documentElement.lang = state.lang;
   setTextIfExists('pageTitle', tr('appTitle'));
   setTextIfExists('pageSub', tr('appSub'));
   setTextIfExists('languageLabel', tr('language'));
   setTextIfExists('brandLabel', tr('brand'));
   setTextIfExists('batteryLabel', tr('battery'));
+  setTextIfExists('socLabel', tr('soc'));
   setTextIfExists('ramLabel', tr('ram'));
   setTextIfExists('storageLabel', tr('storage'));
   setTextIfExists('dimensionsTitle', tr('dimensionsTitle'));
@@ -462,6 +521,7 @@ function applyLanguageToStaticText() {
   setTextIfExists('widthLabel', tr('width'));
   setTextIfExists('thicknessLabel', tr('thickness'));
   setTextIfExists('chargingPowerLabel', tr('chargingPower'));
+  setTextIfExists('socTreeTitle', tr('soc'));
   setTextIfExists('chargingProtocolLabel', tr('chargingProtocolTree'));
   setTextIfExists('mainFootNote', tr('mainFoot'));
   setTextIfExists('cameraEntryLabel', tr('cameraFilter'));
@@ -501,6 +561,8 @@ function applyLanguageToStaticText() {
   setTextIfExists('nfcCheckText', tr('support'));
   setTextIfExists('hwIrTitle', tr('ir'));
   setTextIfExists('irCheckText', tr('support'));
+  setTextIfExists('hwTfCardTitle', tr('tfCard'));
+  setTextIfExists('tfCardCheckText', tr('support'));
   setTextIfExists('hwMotorTitle', tr('motor'));
   setTextIfExists('motorLabel', tr('motor'));
 
@@ -521,6 +583,7 @@ function applyLanguageToStaticText() {
   setLangSelectOptions();
 
   initOrRefreshMultiSelect('brand', '#brandSelect', state.optionData.brands, tr('selectBrand'));
+  initOrRefreshSocTree();
   initOrRefreshMultiSelect('battery', '#batteryRangeSelect', state.optionData.batteryRanges, tr('selectBattery'));
   initOrRefreshMultiSelect('ram', '#ramSelect', state.optionData.ramOptions, tr('selectRam'));
   initOrRefreshMultiSelect('storage', '#storageSelect', state.optionData.storageOptions, tr('selectStorage'));
@@ -540,11 +603,7 @@ function applyLanguageToStaticText() {
   initOrRefreshMultiSelect('screenResolution', '#screenResolutionSelect', state.optionData.screenResolutionOptions, tr('selectResolution'));
   initOrRefreshMultiSelect('screenRefresh', '#screenRefreshSelect', state.optionData.screenRefreshRanges, tr('selectRefresh'));
   initOrRefreshMultiSelect('screenBrightness', '#screenBrightnessSelect', state.optionData.screenBrightnessRanges, tr('selectBrightness'));
-  state.optionData.motorOptions = (state.optionData.motorRows || []).map(r => ({
-    value: r.value,
-    label: state.lang === 'en' ? (r.label_en || r.label_zh || r.value) : (r.label_zh || r.label_en || r.value),
-    sort: r.sort || 0
-  })).sort((a, b) => a.sort - b.sort);
+  state.optionData.motorOptions = (state.optionData.motorRows || []).map(r => ({ value: r.value, label: getLocalizedRowLabel(r), sort: r.sort || 0 })).sort((a, b) => a.sort - b.sort);
   initOrRefreshMultiSelect('wifi', '#wifiSelect', state.optionData.wifiOptions, tr('selectWifi'));
   initOrRefreshMultiSelect('usb', '#usbSelect', state.optionData.usbOptions, tr('selectUsb'));
   initOrRefreshMultiSelect('motor', '#motorSelect', state.optionData.motorOptions, tr('selectMotor'));
@@ -583,6 +642,7 @@ function buildExpandedContent(item) {
        <div class="summary-line"><strong>${tr('usb')}：</strong><span class="tag">${escapeHtml(item.hardwareSpec.usb_spec)}</span></div>
        <div class="summary-line"><strong>${tr('nfc')}：</strong><span class="tag">${boolLabel(item.hardwareSpec.has_nfc)}</span></div>
        <div class="summary-line"><strong>${tr('ir')}：</strong><span class="tag">${boolLabel(item.hardwareSpec.has_ir)}</span></div>
+       <div class="summary-line"><strong>${tr('tfCard')}：</strong><span class="tag">${boolLabel(item.hardwareSpec.has_tf_card)}</span></div>
        <div class="summary-line"><strong>${tr('motor')}：</strong><span class="tag">${escapeHtml(getMotorLabelByValue(item.hardwareSpec.motor_type))}</span></div>`
     : tr('detailNoData');
 
@@ -627,7 +687,7 @@ function renderRows(rows) {
       <td>${escapeHtml(item.id)}</td>
       <td>${escapeHtml(item.brand)}</td>
       <td><a class="model-link" href="detail.html?id=${encodeURIComponent(item.id)}&lang=${encodeURIComponent(state.lang)}" onclick="event.stopPropagation()">${escapeHtml(item.model)}</a></td>
-      <td>${escapeHtml(item.soc)}</td>
+      <td>${escapeHtml(getSocLabelByValue(item.soc))}</td>
       <td>${escapeHtml(item.battery_mah)} mAh</td>
       <td>${(item.ramOptions || []).map(v => `<span class="tag">${escapeHtml(v)}GB</span>`).join('')}</td>
       <td>${(item.storageOptions || []).map(v => `<span class="tag">${escapeHtml(v)}GB</span>`).join('')}</td>
@@ -670,7 +730,7 @@ function renderRows(rows) {
 }
 async function loadAllData() {
   const [
-    languageRows, brandRows, batteryRows, ramRows, storageRows, lengthRows, widthRows, thicknessRows,
+    languageRows, brandRows, batteryRows, ramRows, storageRows, lengthRows, widthRows, thicknessRows, socGroupRows, socVariantRows,
     chargingPowerRows,
     cameraMpRows, cameraCmosRows, cameraApertureRows,
     screenSizeRows, screenResolutionRows, screenRefreshRows, screenBrightnessRows,
@@ -678,27 +738,29 @@ async function loadAllData() {
     phonesRows, memoryRows, storageItemRows, bandRows,
     cameraSpecRows, screenSpecRows, wirelessSpecRows, hardwareSpecRows, chargingSpecRows, chargingProtocolRows
   ] = await Promise.all([
-    parseCsvFile('data/filters/languages.csv'),
-    parseCsvFile('data/filters/brands.csv'),
-    parseCsvFile('data/filters/battery_ranges.csv'),
-    parseCsvFile('data/filters/ram_options.csv'),
-    parseCsvFile('data/filters/storage_options.csv'),
-    parseCsvFile('data/filters/length_ranges.csv'),
-    parseCsvFile('data/filters/width_ranges.csv'),
-    parseCsvFile('data/filters/thickness_ranges.csv'),
-    parseCsvFile('data/filters/charging_power_ranges.csv'),
-    parseCsvFile('data/filters/camera_mp_ranges.csv'),
-    parseCsvFile('data/filters/camera_cmos_ranges.csv'),
-    parseCsvFile('data/filters/camera_aperture_ranges.csv'),
-    parseCsvFile('data/filters/screen_size_ranges.csv'),
-    parseCsvFile('data/filters/screen_resolution_options.csv'),
-    parseCsvFile('data/filters/screen_refresh_ranges.csv'),
-    parseCsvFile('data/filters/screen_brightness_ranges.csv'),
-    parseCsvFile('data/filters/wifi_options.csv'),
-    parseCsvFile('data/filters/usb_options.csv'),
-    parseCsvFile('data/filters/motor_type_options.csv'),
-    parseCsvFile('data/filters/band_modes.csv'),
-    parseCsvFile('data/filters/band_options.csv'),
+    parseCsvFile('data/filters/base/languages.csv'),
+    parseCsvFile('data/filters/base/brands.csv'),
+    parseCsvFile('data/filters/base/battery_ranges.csv'),
+    parseCsvFile('data/filters/base/ram_options.csv'),
+    parseCsvFile('data/filters/base/storage_options.csv'),
+    parseCsvFile('data/filters/base/length_ranges.csv'),
+    parseCsvFile('data/filters/base/width_ranges.csv'),
+    parseCsvFile('data/filters/base/thickness_ranges.csv'),
+    parseCsvFile('data/filters/chipset/soc_groups.csv'),
+    parseCsvFile('data/filters/chipset/soc_variants.csv'),
+    parseCsvFile('data/filters/charging/charging_power_ranges.csv'),
+    parseCsvFile('data/filters/camera/camera_mp_ranges.csv'),
+    parseCsvFile('data/filters/camera/camera_cmos_ranges.csv'),
+    parseCsvFile('data/filters/camera/camera_aperture_ranges.csv'),
+    parseCsvFile('data/filters/display/screen_size_ranges.csv'),
+    parseCsvFile('data/filters/display/screen_resolution_options.csv'),
+    parseCsvFile('data/filters/display/screen_refresh_ranges.csv'),
+    parseCsvFile('data/filters/display/screen_brightness_ranges.csv'),
+    parseCsvFile('data/filters/wireless/wifi_options.csv'),
+    parseCsvFile('data/filters/hardware/usb_options.csv'),
+    parseCsvFile('data/filters/hardware/motor_type_options.csv'),
+    parseCsvFile('data/filters/wireless/band_modes.csv'),
+    parseCsvFile('data/filters/wireless/band_options.csv'),
     parseCsvFile('data/items/phones.csv'),
     parseCsvFile('data/items/phone_memory.csv'),
     parseCsvFile('data/items/phone_storage.csv'),
@@ -733,13 +795,10 @@ async function loadAllData() {
     screenBrightnessRanges: normalizeRangeRows(screenBrightnessRows, 'min_nits', 'max_nits'),
     wifiOptions: normalizeValueRows(wifiRows),
     usbOptions: normalizeValueRows(usbRows),
-    motorRows: motorRows.map(r => ({ value: r.value, label_zh: r.label_zh, label_en: r.label_en, sort: Number(r.sort_order || 0) }))
-      .sort((a, b) => a.sort - b.sort),
-    motorOptions: motorRows.map(r => ({
-      value: r.value,
-      label: state.lang === 'en' ? (r.label_en || r.label_zh || r.value) : (r.label_zh || r.label_en || r.value),
-      sort: Number(r.sort_order || 0)
-    })).sort((a, b) => a.sort - b.sort),
+    socGroupRows: socGroupRows.map(r => ({ ...r, sort: Number(r.sort_order || 0) })).sort((a, b) => a.sort - b.sort),
+    socVariantRows: socVariantRows.map(r => ({ ...r, sort: Number(r.sort_order || 0) })).sort((a, b) => a.sort - b.sort),
+    motorRows: motorRows.map(r => ({ ...r, sort: Number(r.sort_order || 0) })).sort((a, b) => a.sort - b.sort),
+    motorOptions: motorRows.map(r => ({ value: r.value, label: getLocalizedRowLabel(r), sort: Number(r.sort_order || 0) })).sort((a, b) => a.sort - b.sort),
     bandModes: bandModeRows.map(r => ({ value: r.value, sort: Number(r.sort_order || 0) })),
     bandOptions: bandOptionRows.map(r => ({ value: r.value, sort: Number(r.sort_order || 0) }))
   };
@@ -796,6 +855,7 @@ async function loadAllData() {
         usb_spec: spec.usb_spec || '',
         has_nfc: String(spec.has_nfc || '').toLowerCase() === 'true',
         has_ir: String(spec.has_ir || '').toLowerCase() === 'true',
+        has_tf_card: String(spec.has_tf_card || '').toLowerCase() === 'true',
         motor_type: spec.motor_type || ''
       }))[0] || null,
       chargingSpec: (chargingSpecMap.get(key) || []).map(spec => ({

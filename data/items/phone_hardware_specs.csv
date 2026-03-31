@@ -1,8 +1,2 @@
 phone_id,has_3_5mm,usb_spec,has_nfc,has_ir,has_tf_card,motor_type
-1,false,USB 3.2 Gen 2,true,false,false,taptic_like_linear
-2,false,USB 2.0,true,false,false,taptic_like_linear
-3,false,USB 3.2 Gen 1,true,true,false,x_axis_linear
-4,false,USB 3.2 Gen 2,true,true,false,x_axis_linear
-5,false,USB 3.2 Gen 1,true,false,false,x_axis_linear
-6,false,USB 3.2 Gen 2,true,false,false,rotor
-7,false,USB 3.2 Gen 2,true,true,true,x_axis_linear
+1,false,USB 3.2 Gen 1,true,true,false,x_axis_linear

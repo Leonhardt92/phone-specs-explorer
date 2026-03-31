@@ -24,6 +24,22 @@ function getMappedLabel(value, rows, lang) {
   const row = (rows || []).find(item => String(item.value) === String(value));
   return row ? getLocalizedRowLabel(row, lang, value) : String(value || '');
 }
+function formatCameraMp(value) {
+  const numeric = Number(value || 0);
+  if (!Number.isFinite(numeric) || numeric <= 0) return '-';
+  const mp = numeric / 10;
+  return Number.isInteger(mp) ? `${mp}MP` : `${mp.toFixed(1)}MP`;
+}
+function formatSensorSize(value) {
+  const numeric = Number(value || 0);
+  if (!Number.isFinite(numeric) || numeric <= 0) return '-';
+  const reciprocal = 1 / numeric;
+  const rounded = Math.round(reciprocal * 10) / 10;
+  const denominator = Math.abs(rounded - Math.round(rounded)) < 0.05
+    ? String(Math.round(rounded))
+    : rounded.toFixed(1);
+  return `1/${denominator}"`;
+}
 function infoItem(label, value) {
   return `<div class="info-item"><div class="info-label">${escapeHtml(label)}</div><div class="info-value">${value}</div></div>`;
 }
@@ -181,7 +197,7 @@ async function init() {
         <div class="panel">
           <h2 class="card-title">${tr('cameraParams')}</h2>
           <div class="list-block">
-            ${camera.length ? camera.map(c => `<span class="tag">${escapeHtml(c.lens_role)}: ${escapeHtml(c.mp)}w / ${escapeHtml(c.cmos_size_inch)} inch / f${escapeHtml(c.aperture)} / ${String(c.ois).toLowerCase()==='true' ? tr('supportOis') : tr('noOis')}</span>`).join('') : `<div class="empty">${tr('detailNoData')}</div>`}
+            ${camera.length ? camera.map(c => `<span class="tag">${escapeHtml(c.lens_role)}: ${escapeHtml(formatCameraMp(c.mp))} / ${escapeHtml(formatSensorSize(c.cmos_size_inch))} / f${escapeHtml(c.aperture)} / ${String(c.ois).toLowerCase()==='true' ? tr('supportOis') : tr('noOis')}</span>`).join('') : `<div class="empty">${tr('detailNoData')}</div>`}
           </div>
         </div>
 

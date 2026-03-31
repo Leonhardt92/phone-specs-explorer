@@ -134,6 +134,25 @@ function bindCheckboxEvents() {
 function roleLabel(roleKey) { return tr(`role.${roleKey}`); }
 function boolLabel(v) { return v ? tr('support') : tr('notSupport'); }
 function fmtOis(v) { return v ? tr('supportOis') : tr('noOis'); }
+function formatCameraMp(value) {
+  const numeric = Number(value || 0);
+  if (!Number.isFinite(numeric) || numeric <= 0) return '-';
+  const mp = numeric / 10;
+  return Number.isInteger(mp) ? `${mp}MP` : `${mp.toFixed(1)}MP`;
+}
+function formatSensorSize(value) {
+  const numeric = Number(value || 0);
+  if (!Number.isFinite(numeric) || numeric <= 0) return '-';
+  const reciprocal = 1 / numeric;
+  const rounded = Math.round(reciprocal * 10) / 10;
+  const denominator = Math.abs(rounded - Math.round(rounded)) < 0.05
+    ? String(Math.round(rounded))
+    : rounded.toFixed(1);
+  return `1/${denominator}"`;
+}
+function formatSensorSizeRange(min, max) {
+  return `${formatSensorSize(min)} ~ ${formatSensorSize(max)}`;
+}
 function compactModeLabel(mode) {
   if (mode === 'LTE_FDD') return 'LTE FDD';
   if (mode === 'LTE_TDD') return 'LTE TDD';
@@ -622,7 +641,7 @@ function buildExpandedContent(item) {
   const cameraInner = CAMERA_ROLES.map(role => {
     const spec = item.cameraSpecByRole?.[role.key];
     if (!spec) return `<div class="summary-line"><strong>${roleLabel(role.key)}：</strong>${tr('detailNoData')}</div>`;
-    return `<div class="summary-line"><strong>${roleLabel(role.key)}：</strong><span class="tag">${spec.mp}w</span><span class="tag">${spec.cmos_size_inch.toFixed(2)} inch</span><span class="tag">f/${spec.aperture}</span><span class="tag">${fmtOis(spec.ois)}</span></div>`;
+    return `<div class="summary-line"><strong>${roleLabel(role.key)}：</strong><span class="tag">${formatCameraMp(spec.mp)}</span><span class="tag">${formatSensorSize(spec.cmos_size_inch)}</span><span class="tag">f/${spec.aperture}</span><span class="tag">${fmtOis(spec.ois)}</span></div>`;
   }).join('');
 
   const screenInner = item.screenSpec
@@ -787,7 +806,8 @@ async function loadAllData() {
     thicknessRanges: normalizeRangeRows(thicknessRows, 'min_mm', 'max_mm'),
     chargingPowerRanges: normalizeRangeRows(chargingPowerRows, 'min_w', 'max_w'),
     cameraMpRanges: normalizeRangeRows(cameraMpRows, 'min_mp', 'max_mp'),
-    cameraCmosRanges: normalizeRangeRows(cameraCmosRows, 'min_size', 'max_size'),
+    cameraCmosRanges: normalizeRangeRows(cameraCmosRows, 'min_size', 'max_size')
+      .map(item => ({ ...item, label: formatSensorSizeRange(item.min, item.max) })),
     cameraApertureRanges: normalizeRangeRows(cameraApertureRows, 'min_f', 'max_f'),
     screenSizeRanges: normalizeRangeRows(screenSizeRows, 'min_inch', 'max_inch'),
     screenResolutionOptions: normalizeValueRows(screenResolutionRows),

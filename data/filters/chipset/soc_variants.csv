@@ -1,6 +1,2 @@
 value,group_value,label_zh,label_en,sort_order
-A17 Pro,apple,A17 Pro,A17 Pro,1
-A16 Bionic,apple,A16 仿生,A16 Bionic,2
-8 Gen 3,qualcomm_elite,骁龙8 Gen 3,Snapdragon 8 Gen 3,1
-8 Gen 3 for Galaxy,qualcomm_elite,骁龙8 Gen 3 for Galaxy,Snapdragon 8 Gen 3 for Galaxy,2
-Tensor G3,google_tensor,Tensor G3,Tensor G3,1
+Dimensity 9500,mediatek_dimensity,天玑 9500,Dimensity 9500,1

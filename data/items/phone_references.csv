@@ -1,15 +1,3 @@
 phone_id,title,url,kind
-1,Official Tech Specs,https://support.apple.com/en-sg/111829,official
-1,Hands-on / Review Videos,https://www.youtube.com/results?search_query=iPhone+15+Pro+review,video
-2,Official Product Page,https://www.apple.com/sg/iphone-15/,official
-2,Review Videos,https://www.youtube.com/results?search_query=iPhone+15+review,video
-3,Official Specs,https://www.mi.com/global/product/xiaomi-14/specs/,official
-3,Review Videos,https://www.youtube.com/results?search_query=Xiaomi+14+review,video
-4,Official Product Page,https://www.mi.com/global/product/xiaomi-14/,official
-4,Review Videos,https://www.youtube.com/results?search_query=Xiaomi+14+Ultra+review,video
-5,Official Specs,https://www.samsung.com/sg/smartphones/galaxy-s24-ultra/specs/,official
-5,Review Videos,https://www.youtube.com/results?search_query=Galaxy+S24+Ultra+review,video
-6,Pixel Hardware Tech Specs,https://support.google.com/pixelphone/answer/7158570?hl=en,official
-6,Review Videos,https://www.youtube.com/results?search_query=Pixel+8+Pro+review,video
-7,Official Specs,https://www.oneplus.com/sg/12/specs,official
-7,Review Videos,https://www.youtube.com/results?search_query=OnePlus+12+review,video
+1,vivo X300 官方参数页,https://www.vivo.com.cn/vivo/param/x300,official
+1,Vivo X300 视频评测,https://www.bilibili.com/video/BV1GtXeB2E7R,video

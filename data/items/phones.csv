@@ -1,8 +1,2 @@
-id,brand,model,soc,battery_mah
-1,Apple,iPhone 15 Pro,A17 Pro,3274
-2,Apple,iPhone 15,A16 Bionic,3349
-3,Xiaomi,Xiaomi 14,8 Gen 3,4610
-4,Xiaomi,Xiaomi 14 Ultra,8 Gen 3,5300
-5,Samsung,Galaxy S24 Ultra,8 Gen 3 for Galaxy,5000
-6,Google,Pixel 8 Pro,Tensor G3,5050
-7,OnePlus,OnePlus 12,8 Gen 3,5400
+id,brand,model,soc,battery_mah,length_mm,width_mm,thickness_mm
+1,Vivo,X300,Dimensity 9500,6040,150.57,71.92,7.95
